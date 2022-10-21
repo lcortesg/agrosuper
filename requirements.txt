@@ -1,0 +1,8 @@
+streamlit
+wheel
+numpy
+pandas
+#plotly
+#altair
+#scipy
+#pydub
