@@ -9,53 +9,53 @@
 @bug     : None.
 """
 
+from config.config import Config
+from source.sensors import Sensors
 import numpy as np
 import pandas as pd
 import streamlit as st
 import requests
 import datetime  
+from datetime import datetime, timedelta
 
-def csv_plot():
+
+def agro_plot():
 
     st.markdown("# Agrosuper Plot 🐖")
     #st.sidebar.markdown("# Agrosuper Plot 🐖")
 
-    url = 'https://www.imonnit.com/json/SensorDataMessages?sensorID='
-    headers = {'APIKeyID': 'MYz5Ya4utYKM' , 'APISecretKey': '1pqfIKdabjKTCYHYwG5raUGowa7KqTeq'}
-    from_date = '10/20/22'
-    to_date = '10/21/22'
-
     sensor_id = st.selectbox(
         'Sensor to read',
-        ('355862', '406588'))
+        (Config.sensor_ids)
+        )
     
-    d = st.date_input(
-        "Date selector",
-        datetime.date(2019, 7, 6))
-    #auth = HTTPBasicAuth('apikey', 'MYz5Ya4utYKM')
-    #files = {'sensors': open('filename', 'rb')}
+    data = Sensors.get_sensor(sensor_id)
+    Sensors.sensor_show(sensor_id)
+    sensor_name = data["Name"]
+    sensor_type = data["Type"]
+    last_date = data["Last"]
+    last_day = str(last_date).split()[0]
+    last_days = last_day.split("-")
+    start_date = datetime(2022,10,8)
+    full_start_date = "2022/10/08"
 
-    temps = []
-    dates = []
-
-    try:
-        req = requests.get(url+sensor_id+'&fromDate='+from_date+'&toDate='+to_date, headers=headers)
-        data_raw = req.json()
-        data = data_raw['Result']
-        for i in data:
-            temps.append(float(i['Data']))
-            time = int(i['MessageDate'].split('(')[1].split(')')[0])/1000
-            date = datetime.datetime.fromtimestamp(time)
-            dates.append(str(date.day)+'-'+str(date.month)+'-'+str(date.year)+'/'+str(date.hour)+':'+str(date.minute)+':'+str(date.second))
-        variables = {
-            "Fecha": dates,
-            "Temperatura": temps,
-        }
-        df = pd.DataFrame(variables)
-        df = df.set_index('Fecha')
-        st.line_chart(df)
-        return True
+    window_time = st.slider(
+        'Select a range of values',
+        start_date, datetime(int(last_days[0]), int(last_days[1]), int(last_days[2])), (datetime(int(last_days[0]), int(last_days[1]), int(last_days[2]))))
+        #datetime(2022,10,8), datetime(int(last_days[0]), int(last_days[1]), int(last_days[2])), (datetime(int(last_days[0]), int(last_days[1]), int(last_days[2])-6), datetime(int(last_days[0]), int(last_days[1]), int(last_days[2]))))
     
-    except Exception as e:
-        print(e)
-        return False
+    #window_time = st.slider(
+    #    "When do you start?",
+    #    value=(datetime(int(last_days[0]), int(last_days[1]), int(last_days[2])-6), datetime(int(last_days[0]), int(last_days[1]), int(last_days[2]))),
+    #    format="YYYY/MM/DD")
+    #d = st.date_input(
+    #    "When's your birthday",
+    #    datetime(int(last_days[0]), int(last_days[1]), int(last_days[2])))
+    full_date = str(window_time).split()[0].split("-")
+    to_date = f'{full_date[0]}/{full_date[1]}/{full_date[2]}'
+    from_date = f'{full_date[0]}/{full_date[1]}/{int(full_date[2])-7}'
+    d = datetime.date(window_time) - timedelta(days=7)
+    if not (d>start_date.date()):
+        from_date =  full_start_date
+    data = Sensors.get_data(sensor_id, sensor_type, from_date, to_date)
+    Sensors.plot_data(data)

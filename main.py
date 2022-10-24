@@ -11,7 +11,8 @@
 
 from PIL import Image
 import streamlit as st
-from source.plot import csv_plot
+from source.plot import agro_plot
+from source.location import agro_locations
 from source.welcome import welcome
 
 
@@ -23,24 +24,25 @@ def main():
         page_title="Agrosuper",
         page_icon=im,
         layout="wide",
-        initial_sidebar_state="collapsed"
+        initial_sidebar_state="expanded"
     )
 
-    if csv_plot():
-        st.markdown("#### ¡Proceso finalizado con éxito! 🥳🎉🎊🎈")
+    #if agro_plot():
+    #    st.markdown("#### ¡Proceso finalizado con éxito! 🥳🎉🎊🎈")
 
-    # functions = {
-    #     "Plot": csv_plot,
-    #     #"Principal": welcome,
+    functions = {
+        "Plot": agro_plot,
+        "Locations": agro_locations,
+        #"Principal": welcome,
         
-    # }
+    }
 
-    # selected_function = st.sidebar.selectbox(
-    #     "Hola Nicco! ¿Que quieres hacer hoy?", functions.keys()
-    # )
+    selected_function = st.sidebar.selectbox(
+        "Seleccionar función", functions.keys()
+    )
 
-    # if functions[selected_function]():
-    #     st.markdown("#### ¡Proceso finalizado con éxito! 🥳🎉🎊🎈")
+    if functions[selected_function]():
+        st.markdown("#### ¡Proceso finalizado con éxito! 🥳🎉🎊🎈")
 
 
 if __name__ == "__main__":
