@@ -17,7 +17,8 @@ import requests
 import datetime  
 from datetime import date
 
-headers = {'APIKeyID': Config.api_key , 'APISecretKey': Config.api_secret}
+
+headers = {'APIKeyID': st.secrets["API_KEY"], 'APISecretKey': st.secrets["API_SECRET"]}
 url_get = Config.url_get
 url_data = Config.url_data
 

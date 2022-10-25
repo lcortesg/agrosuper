@@ -22,7 +22,7 @@ from datetime import datetime, timedelta
 def agro_plot():
 
     st.markdown("# Agrosuper Plot 🐖")
-    #st.sidebar.markdown("# Agrosuper Plot 🐖")
+    st.sidebar.markdown("# Agrosuper Plot 🐖")
 
     sensor_id = st.selectbox(
         'Sensor to read',

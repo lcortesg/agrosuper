@@ -2,8 +2,6 @@ import os
 
 
 class Config:
-    api_key = 'MYz5Ya4utYKM'
-    api_secret = '1pqfIKdabjKTCYHYwG5raUGowa7KqTeq'
     url_get = 'https://www.imonnit.com/json/SensorGet'
     url_data = 'https://www.imonnit.com/json/SensorDataMessages'
     sensor_ids2 = ['355862', '406588']

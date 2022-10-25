@@ -20,10 +20,10 @@ from datetime import date
 
 
 
-def agro_locations():
+def agro_status():
 
-    st.markdown("# Agrosuper Locations 🐷")
-    #st.sidebar.markdown("# Agrosuper Plot 🐖")
+    st.markdown("# Agrosuper Status 🐷")
+    st.sidebar.markdown("# Agrosuper Status 🐷")
 
     truck_id = st.selectbox(
         'Truck to read',

@@ -12,7 +12,7 @@
 from PIL import Image
 import streamlit as st
 from source.plot import agro_plot
-from source.location import agro_locations
+from source.status import agro_status
 from source.welcome import welcome
 
 
@@ -32,7 +32,7 @@ def main():
 
     functions = {
         "Plot": agro_plot,
-        "Locations": agro_locations,
+        "Status": agro_status,
         #"Principal": welcome,
         
     }
