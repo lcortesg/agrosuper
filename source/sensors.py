@@ -51,7 +51,19 @@ class Sensors:
     def get_data(sensor_id, sensor_type, from_date, to_date):
         dates = []
         temps = []
+        temps_t = []
         hums = []
+        hums_t = []
+        avg_t = []
+        max_t = []
+        min_t = []
+        avg_h = []
+        max_h = []
+        min_h = []
+        avg_a = []
+        max_a = []
+        min_a = []
+        mag_t = []
         x = []
         y = []
         z = []
@@ -60,18 +72,46 @@ class Sensors:
             req = requests.get(url_data+'?SensorID='+sensor_id+'&fromDate='+from_date+'&toDate='+to_date, headers=headers)
             data_raw = req.json()
             data = data_raw['Result']
+            day = to_date.split("/")[2]
+            cont = 17
             for i in data:
+                cont = cont + 1
                 time = int(i['MessageDate'].split('(')[1].split(')')[0])/1000
                 date = datetime.datetime.fromtimestamp(time)
-                dates.append(str(date.day)+'-'+str(date.month)+'-'+str(date.year)+'/'+str(date.hour)+':'+str(date.minute)+':'+str(date.second))
+                dates.append(str(date))#(str(date.month)+'-'+str(date.day)+'-'+str(date.year)+'/'+str(date.hour)+':'+str(date.minute)+':'+str(date.second))
+                if day != str(date.day):
+                    day = str(date.day)
+                    print(day)
+                    if sensor_type == "Temperature":
+                        max_t = max_t + [max(temps_t)]*cont
+                        min_t = min_t + [min(temps_t)]*cont
+                        avg_t = avg_t + [np.average(temps_t)]*cont
+                    if sensor_type == "Humidity":
+                        max_t = max_t + [max(temps_t)]*cont
+                        min_t = min_t + [min(temps_t)]*cont
+                        avg_t = avg_t + [np.average(temps_t)]*cont
+                        max_h = max_h + [max(hums_t)]*cont
+                        min_h = min_h + [min(hums_t)]*cont
+                        avg_h = avg_h + [np.average(hums_t)]*cont
+                    if sensor_type == "G-force":
+                        max_a = max_a + [max(mag_t)]*cont
+                        min_a = min_a + [min(mag_t)]*cont
+                        avg_a = avg_a + [np.average(mag_t)]*cont
+                    cont = 0
+                    temps_t = []
+                    hums_t = []
+                    mag_t = []
 
                 if sensor_type == "Temperature":
                     temps.append(float(i['Data']))
+                    temps_t.append(float(i['Data']))
 
                 if sensor_type == "Humidity":
                     data_sensor = i['Data'].split(",")
                     hums.append(float(data_sensor[0]))
                     temps.append(float(data_sensor[1]))
+                    temps_t.append(float(data_sensor[1]))
+                    hums_t.append(float(data_sensor[0]))
                 
                 if sensor_type == "G-force":
                     data_sensor = i['Data'].split("|")
@@ -79,18 +119,31 @@ class Sensors:
                     y.append(float(data_sensor[1]))
                     z.append(float(data_sensor[2]))
                     m.append(float(data_sensor[3]))
+                    mag_t.append(float(data_sensor[3]))
 
             if sensor_type == "Temperature":    
                 variables = {
                     "Fecha": dates,
                     "Temperatura": temps,
+                    "Máxima": max_t,
+                    "Mínima": min_t,
+                    "Promedio": avg_t,
                 }
+                st.write(len(dates))
+                st.write(len(temps))
+                st.write(len(max_t))
 
             if sensor_type == "Humidity":    
                 variables = {
                     "Fecha": dates,
                     "Temperatura": temps,
                     "Humedad": hums,
+                    "T Máxima": max_t,
+                    "T Mínima": min_t,
+                    "T Promedio": avg_t,
+                    "H Máxima": max_h,
+                    "H Mínima": min_h,
+                    "H Promedio": avg_h,
                 }
             
             if sensor_type == "G-force":    
@@ -100,10 +153,14 @@ class Sensors:
                     "Y": y,
                     "Z": z,
                     "Magnitud": m,
+                    "Promedio": avg_a,
+                    "Mínima": min_a,
+                    "Máxima": max_a,
                 }
 
             df = pd.DataFrame(variables)
             df = df.set_index('Fecha')
+            df = df.reindex(index=df.index[::-1])
             return df
         except Exception as e:
             print(e)
