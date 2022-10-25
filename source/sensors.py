@@ -81,7 +81,6 @@ class Sensors:
                 dates.append(str(date))#(str(date.month)+'-'+str(date.day)+'-'+str(date.year)+'/'+str(date.hour)+':'+str(date.minute)+':'+str(date.second))
                 if day != str(date.day):
                     day = str(date.day)
-                    print(day)
                     if sensor_type == "Temperature":
                         max_t = max_t + [max(temps_t)]*cont
                         min_t = min_t + [min(temps_t)]*cont
@@ -129,9 +128,6 @@ class Sensors:
                     "Mínima": min_t,
                     "Promedio": avg_t,
                 }
-                st.write(len(dates))
-                st.write(len(temps))
-                st.write(len(max_t))
 
             if sensor_type == "Humidity":    
                 variables = {
