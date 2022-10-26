@@ -15,9 +15,8 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 import requests
-import datetime  
+import datetime
 from datetime import date
-
 
 
 def agro_status():
@@ -25,17 +24,10 @@ def agro_status():
     st.markdown("# Agrosuper Status 🐷")
     st.sidebar.markdown("# Agrosuper Status 🐷")
 
-    truck_id = st.selectbox(
-        'Truck to read',
-        (["Wilson", "Triel"])
-        )
+    truck_id = st.selectbox("Seleccionar tráiler", (["Wilson", "Triel"]))
 
-    #with col_truck1:
-    st.markdown(f"## Camión {truck_id}")
+    # with col_truck1:
+    st.markdown(f"## Tráiler {truck_id}")
     for sensor_id in Config.sensor_ids:
         if Config.sensor_ids[sensor_id]["Truck"] == truck_id:
             Sensors.sensor_show(sensor_id)
-    
-
-
-    

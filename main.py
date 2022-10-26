@@ -24,22 +24,19 @@ def main():
         page_title="Agrosuper",
         page_icon=im,
         layout="wide",
-        initial_sidebar_state="expanded"
+        initial_sidebar_state="expanded",
     )
 
-    #if agro_plot():
+    # if agro_plot():
     #    st.markdown("#### ¡Proceso finalizado con éxito! 🥳🎉🎊🎈")
 
     functions = {
         "Plot": agro_plot,
         "Status": agro_status,
-        #"Principal": welcome,
-        
+        # "Principal": welcome,
     }
 
-    selected_function = st.sidebar.selectbox(
-        "Seleccionar función", functions.keys()
-    )
+    selected_function = st.sidebar.selectbox("Seleccionar función", functions.keys())
 
     if functions[selected_function]():
         st.markdown("#### ¡Proceso finalizado con éxito! 🥳🎉🎊🎈")
