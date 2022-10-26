@@ -15,7 +15,8 @@ import pandas as pd
 import streamlit as st
 import requests
 import datetime
-from datetime import date
+from datetime import date, timedelta
+from itertools import zip_longest
 
 
 headers = {"APIKeyID": st.secrets["API_KEY"], "APISecretKey": st.secrets["API_SECRET"]}
@@ -47,6 +48,87 @@ class Sensors:
             return out_data
         except Exception as e:
             print(e)
+
+    def get_datas(to_date, struck):
+        temperaturas = {}
+        humedades = {}
+        aceleraciones = {}
+        for sensor_id in Config.sensor_ids:
+            sensor_type = Config.sensor_ids[sensor_id]["Type"]
+            sensor_truck = Config.sensor_ids[sensor_id]["Truck"]
+            if sensor_truck == struck:
+                dates = []
+                temps = []
+                hums = []
+                x = []
+                y = []
+                z = []
+                m = []
+                req = requests.get(
+                    url_data
+                    + "?SensorID="
+                    + sensor_id
+                    + "&fromDate="
+                    + str(to_date + timedelta(hours=4))
+                    + "&toDate="
+                    + str(to_date),
+                    headers=headers,
+                )
+                data_raw = req.json()
+                data = data_raw["Result"]
+                #day = to_date.split("/")[2]
+                #cont = 17
+                for i in data:
+                    #cont = cont + 1
+                    time = int(i["MessageDate"].split("(")[1].split(")")[0]) / 1000
+                    time = int(time/60)
+                    time = int(time*60)
+                    date = datetime.datetime.fromtimestamp(time)
+                    dates.append(
+                        str(date)
+                    )  # (str(date.month)+'-'+str(date.day)+'-'+str(date.year)+'/'+str(date.hour)+':'+str(date.minute)+':'+str(date.second))
+                    
+                    if sensor_type == "Temperature":
+                        temps.append(float(i["Data"]))
+
+                    if sensor_type == "Humidity":
+                        data_sensor = i["Data"].split(",")
+                        hums.append(float(data_sensor[0]))
+                        temps.append(float(data_sensor[1]))
+
+                    if sensor_type == "G-force":
+                        data_sensor = i["Data"].split("|")
+                        #x.append(float(data_sensor[0]))
+                        #y.append(float(data_sensor[1]))
+                        #z.append(float(data_sensor[2]))
+                        m.append(float(data_sensor[3]))
+
+                if sensor_type == "Temperature":
+                    temperaturas[f'{sensor_id}: {sensor_type}'] = temps
+                    if "Fecha" not in temperaturas:
+                        temperaturas["Fecha"] = dates
+                if sensor_type == "Humidity":
+                    temperaturas[f'{sensor_id}: Temperature'] = temps
+                    humedades[f'{sensor_id}: Humidity'] = hums
+                    if "Fecha" not in humedades:
+                        humedades["Fecha"] = dates
+                if sensor_type == "G-force":
+                    aceleraciones[f'{sensor_id}: {sensor_type}'] = m
+                    if "Fecha" not in aceleraciones:
+                        aceleraciones["Fecha"] = dates
+
+
+        zl = list(zip_longest(*temperaturas.values()))
+        dft = pd.DataFrame(zl, columns=temperaturas.keys())
+        #df = pd.DataFrame(variables)
+        dft = dft.set_index("Fecha")
+        dfh = pd.DataFrame(humedades)
+        dfh = dfh.set_index("Fecha")
+        dfa = pd.DataFrame(aceleraciones)
+        dfa = dfa.set_index("Fecha")
+        #df = df.reindex(index=df.index[::-1])
+        return dft, dfh, dfa
+    
 
     def get_data(sensor_id, sensor_type, from_date, to_date):
         dates = []
@@ -86,6 +168,8 @@ class Sensors:
             for i in data:
                 cont = cont + 1
                 time = int(i["MessageDate"].split("(")[1].split(")")[0]) / 1000
+                time = int(time/60)
+                time = int(time*60)
                 date = datetime.datetime.fromtimestamp(time)
                 dates.append(
                     str(date)
@@ -93,6 +177,7 @@ class Sensors:
                 if day != str(date.day):
                     day = str(date.day)
                     if sensor_type == "Temperature":
+                        st.write("holi")
                         max_t = max_t + [max(temps_t)] * cont
                         min_t = min_t + [min(temps_t)] * cont
                         avg_t = avg_t + [np.average(temps_t)] * cont
@@ -135,10 +220,11 @@ class Sensors:
                 variables = {
                     "Fecha": dates,
                     "Temperatura": temps,
-                    "Máxima": max_t,
-                    "Mínima": min_t,
-                    "Promedio": avg_t,
+                    #"Máxima": max_t,
+                    #"Mínima": min_t,
+                    #"Promedio": avg_t,
                 }
+                
 
             if sensor_type == "Humidity":
                 variables = {
@@ -164,16 +250,20 @@ class Sensors:
                     "Mínima": min_a,
                     "Máxima": max_a,
                 }
+            st.write(variables)
 
             df = pd.DataFrame(variables)
             df = df.set_index("Fecha")
-            df = df.reindex(index=df.index[::-1])
+            #df = df.reindex(index=df.index[::-1])
             return df
         except Exception as e:
-            print(e)
+            st.write(e)
 
     def plot_data(df):
-        st.line_chart(df)
+        values = st.slider(
+            'Select a range of values',
+            0, len(df), (0, len(df)))
+        st.line_chart(df[len(df)-values[1]:len(df)-values[0]])
 
     def epoch_to_date(epoch):
         st.write(epoch)
